@@ -22,18 +22,18 @@ This is intended for private/casual use and hasnt been tested nor designed for f
 # Install
 
 ```
-1. Clone the repo
+# 1. Clone the repo
 git clone https://github.com/christ-pher/surf-timer.git
 
-2. Move Chris-Surf-Timer.sp to your cstrike/addons/sourcemod/scripting
+# 2. Move Chris-Surf-Timer.sp to your cstrike/addons/sourcemod/scripting
 
-3. Compile the plugin
+# 3. Compile the plugin
 ./compile.sh Chris-Surf-Timer.sp
 
-4. Copy the compiled plugin to your plugins dir
+# 4. Copy the compiled plugin to your plugins dir
 cp compiled/Chris-Surf-Timer.smx ../plugins
 
-5. Restart your CS:S server
+# 5. Restart your CS:S server
 ```
 # TODO
 
