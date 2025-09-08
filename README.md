@@ -25,7 +25,7 @@ This is intended for private/casual use and hasnt been tested nor designed for f
 # Clone the repo
 git clone https://github.com/christ-pher/surf-timer.git
 
-# Move Chris-Surf-Timer.sp to your cstrike/addons/sourcemod/scripting
+# Move Chris-Surf-Timer.sp to cstrike/addons/sourcemod/scripting
 
 # Compile the plugin
 ./compile.sh Chris-Surf-Timer.sp
