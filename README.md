@@ -1,1 +1,1 @@
-# surf-timer
+# Surf Timer
