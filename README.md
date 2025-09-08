@@ -21,7 +21,7 @@ This is intended for private/casual use and hasnt been tested nor designed for f
 
 # Install
 
-```
+```bash
 # 1. Clone the repo
 git clone https://github.com/christ-pher/surf-timer.git
 
