@@ -352,7 +352,7 @@ void OnPlayerFinished(int client, float time)
         else
         {
             FormatDurationCenti(pbDiff, pbDiffStr, sizeof(pbDiffStr));
-            Format(pbText, sizeof(pbText), " \x01PB +%s", pbDiffStr);
+            Format(pbText, sizeof(pbText), " \x02PB +%s", pbDiffStr);
         }
     }
     else
@@ -379,7 +379,7 @@ void OnPlayerFinished(int client, float time)
         else
         {
             FormatDurationCenti(wrDiff, wrDiffStr, sizeof(wrDiffStr));
-            Format(wrText, sizeof(wrText), " \x01WR +%s", wrDiffStr);
+            Format(wrText, sizeof(wrText), " \x02WR +%s", wrDiffStr);
         }
     }
     else
