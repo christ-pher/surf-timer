@@ -43,7 +43,7 @@ float g_EndMin[3],   g_EndMax[3],   g_EndCenter[3];
 public Plugin myinfo =
 {
     name        = "Chris Surf Timer",
-    author      = "christopher",
+    author      = "christ-pher",
     description = "Surf timer for CS:Source",
     version     = "1.0.0"
 };
