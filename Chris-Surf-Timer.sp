@@ -336,56 +336,60 @@ void OnPlayerFinished(int client, float time)
     
     // Compare to personal best
     bool newPB = false;
-    char pbText[64] = "";
+    char pbDiffStr[32] = "";
+    bool pbImproved = false;
     
     if (g_HasPersonalBest[client])
     {
         float pbDiff = time - g_PersonalBest[client];
-        char pbDiffStr[32];
         
         if (time < g_PersonalBest[client])
         {
             newPB = true;
+            pbImproved = true;
             FormatDurationCenti(g_PersonalBest[client] - time, pbDiffStr, sizeof(pbDiffStr));
-            Format(pbText, sizeof(pbText), " \x04PB -%s", pbDiffStr);
+            Format(pbDiffStr, sizeof(pbDiffStr), "PB -%s", pbDiffStr);
         }
         else
         {
             FormatDurationCenti(pbDiff, pbDiffStr, sizeof(pbDiffStr));
-            Format(pbText, sizeof(pbText), " \x02PB +%s", pbDiffStr);
+            Format(pbDiffStr, sizeof(pbDiffStr), "PB +%s", pbDiffStr);
         }
     }
     else
     {
         newPB = true;
-        strcopy(pbText, sizeof(pbText), " \x04First Time");
+        pbImproved = true;
+        strcopy(pbDiffStr, sizeof(pbDiffStr), "First Time");
     }
     
     // Compare to server record
     bool newWR = false;
-    char wrText[64] = "";
+    char wrDiffStr[32] = "";
+    bool wrImproved = false;
     
     if (g_ServerRecord > 0.0)
     {
         float wrDiff = time - g_ServerRecord;
-        char wrDiffStr[32];
         
         if (time < g_ServerRecord)
         {
             newWR = true;
+            wrImproved = true;
             FormatDurationCenti(g_ServerRecord - time, wrDiffStr, sizeof(wrDiffStr));
-            Format(wrText, sizeof(wrText), " \x04WR -%s", wrDiffStr);
+            Format(wrDiffStr, sizeof(wrDiffStr), "WR -%s", wrDiffStr);
         }
         else
         {
             FormatDurationCenti(wrDiff, wrDiffStr, sizeof(wrDiffStr));
-            Format(wrText, sizeof(wrText), " \x02WR +%s", wrDiffStr);
+            Format(wrDiffStr, sizeof(wrDiffStr), "WR +%s", wrDiffStr);
         }
     }
     else
     {
         newWR = true;
-        strcopy(wrText, sizeof(wrText), " \x04NEW WR");
+        wrImproved = true;
+        strcopy(wrDiffStr, sizeof(wrDiffStr), "NEW WR");
     }
     
     // Announce completion with both comparisons
@@ -394,7 +398,33 @@ void OnPlayerFinished(int client, float time)
         PrintToChatAll("\x04[SURF] \x03★ NEW SERVER RECORD! ★");
     }
     
-    PrintToChatAll("\x04[SURF]\x01 %s completed in \x03%s\x01 |%s |%s", name, timeStr, pbText, wrText);
+    // Build the final message with proper colors
+    // Using if statements to add color codes to each part
+    char finalMessage[256];
+    char pbColoredText[64];
+    char wrColoredText[64];
+    
+    if (pbImproved)
+    {
+        Format(pbColoredText, sizeof(pbColoredText), "\x04%s", pbDiffStr);  // Green for PB improvement
+    }
+    else
+    {
+        Format(pbColoredText, sizeof(pbColoredText), "\x01%s", pbDiffStr);  // White for slower PB
+    }
+    
+    if (wrImproved)
+    {
+        Format(wrColoredText, sizeof(wrColoredText), "\x04%s", wrDiffStr);  // Green for WR improvement
+    }
+    else
+    {
+        Format(wrColoredText, sizeof(wrColoredText), "\x01%s", wrDiffStr);  // White for slower than WR
+    }
+    
+    // Print the final message - time is already \x03 (green/team color)
+    PrintToChatAll("\x04[SURF]\x01 %s completed in \x03%s\x01 | %s\x01 | %s", 
+        name, timeStr, pbColoredText, wrColoredText);
     
     // Update records
     if (newPB || !g_HasPersonalBest[client])
