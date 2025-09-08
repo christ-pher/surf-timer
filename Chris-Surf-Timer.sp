@@ -63,7 +63,7 @@ public Plugin myinfo =
 
 // ───────────────────────────────────────────
 // Lifecycle
-// ───────────────────────────────────────────────
+// ───────────────────────────────────────────
 public void OnPluginStart()
 {
     // Smooth UI: 0.01s
@@ -335,31 +335,30 @@ void OnPlayerFinished(int client, float time)
     FormatDurationCenti(time, timeStr, sizeof(timeStr));
     
     // Compare to personal best
-    float pbDiff = 0.0;
     bool newPB = false;
     char pbText[64] = "";
     
     if (g_HasPersonalBest[client])
     {
-        pbDiff = time - g_PersonalBest[client];
+        float pbDiff = time - g_PersonalBest[client];
+        char pbDiffStr[32];
+        
         if (time < g_PersonalBest[client])
         {
             newPB = true;
-            char diffStr[32];
-            FormatDurationCenti(g_PersonalBest[client] - time, diffStr, sizeof(diffStr));
-            Format(pbText, sizeof(pbText), " \x04[PB -%s]", diffStr);
+            FormatDurationCenti(g_PersonalBest[client] - time, pbDiffStr, sizeof(pbDiffStr));
+            Format(pbText, sizeof(pbText), " \x04PB -%s", pbDiffStr);
         }
         else
         {
-            char diffStr[32];
-            FormatDurationCenti(pbDiff, diffStr, sizeof(diffStr));
-            Format(pbText, sizeof(pbText), " \x07[PB +%s]", diffStr);
+            FormatDurationCenti(pbDiff, pbDiffStr, sizeof(pbDiffStr));
+            Format(pbText, sizeof(pbText), " \x01PB +%s", pbDiffStr);
         }
     }
     else
     {
         newPB = true;
-        strcopy(pbText, sizeof(pbText), " \x04[First Time!]");
+        strcopy(pbText, sizeof(pbText), " \x04First Time");
     }
     
     // Compare to server record
@@ -369,36 +368,33 @@ void OnPlayerFinished(int client, float time)
     if (g_ServerRecord > 0.0)
     {
         float wrDiff = time - g_ServerRecord;
+        char wrDiffStr[32];
+        
         if (time < g_ServerRecord)
         {
             newWR = true;
-            char diffStr[32];
-            FormatDurationCenti(g_ServerRecord - time, diffStr, sizeof(diffStr));
-            Format(wrText, sizeof(wrText), " \x04[WR -%s]", diffStr);
+            FormatDurationCenti(g_ServerRecord - time, wrDiffStr, sizeof(wrDiffStr));
+            Format(wrText, sizeof(wrText), " \x04WR -%s", wrDiffStr);
         }
         else
         {
-            char diffStr[32];
-            FormatDurationCenti(wrDiff, diffStr, sizeof(diffStr));
-            Format(wrText, sizeof(wrText), " \x07[WR +%s]", diffStr);
+            FormatDurationCenti(wrDiff, wrDiffStr, sizeof(wrDiffStr));
+            Format(wrText, sizeof(wrText), " \x01WR +%s", wrDiffStr);
         }
     }
     else
     {
         newWR = true;
-        strcopy(wrText, sizeof(wrText), " \x04[NEW SERVER RECORD!]");
+        strcopy(wrText, sizeof(wrText), " \x04NEW WR");
     }
     
-    // Announce completion
+    // Announce completion with both comparisons
     if (newWR)
     {
         PrintToChatAll("\x04[SURF] \x03★ NEW SERVER RECORD! ★");
-        PrintToChatAll("\x04[SURF]\x01 %s completed in \x03%s\x01%s", name, timeStr, wrText);
     }
-    else
-    {
-        PrintToChatAll("\x04[SURF]\x01 %s completed in \x03%s\x01%s%s", name, timeStr, pbText, wrText);
-    }
+    
+    PrintToChatAll("\x04[SURF]\x01 %s completed in \x03%s\x01 |%s |%s", name, timeStr, pbText, wrText);
     
     // Update records
     if (newPB || !g_HasPersonalBest[client])
