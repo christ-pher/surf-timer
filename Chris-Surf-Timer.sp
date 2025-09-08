@@ -345,11 +345,15 @@ void OnPlayerFinished(int client, float time)
         if (time < g_PersonalBest[client])
         {
             newPB = true;
-            Format(pbText, sizeof(pbText), " \x04[PB -%s]", FormatTimeDiff(g_PersonalBest[client] - time));
+            char diffStr[32];
+            FormatDurationCenti(g_PersonalBest[client] - time, diffStr, sizeof(diffStr));
+            Format(pbText, sizeof(pbText), " \x04[PB -%s]", diffStr);
         }
         else
         {
-            Format(pbText, sizeof(pbText), " \x07[PB +%s]", FormatTimeDiff(pbDiff));
+            char diffStr[32];
+            FormatDurationCenti(pbDiff, diffStr, sizeof(diffStr));
+            Format(pbText, sizeof(pbText), " \x07[PB +%s]", diffStr);
         }
     }
     else
@@ -368,11 +372,15 @@ void OnPlayerFinished(int client, float time)
         if (time < g_ServerRecord)
         {
             newWR = true;
-            Format(wrText, sizeof(wrText), " \x04[WR -%s]", FormatTimeDiff(g_ServerRecord - time));
+            char diffStr[32];
+            FormatDurationCenti(g_ServerRecord - time, diffStr, sizeof(diffStr));
+            Format(wrText, sizeof(wrText), " \x04[WR -%s]", diffStr);
         }
         else
         {
-            Format(wrText, sizeof(wrText), " \x07[WR +%s]", FormatTimeDiff(wrDiff));
+            char diffStr[32];
+            FormatDurationCenti(wrDiff, diffStr, sizeof(diffStr));
+            Format(wrText, sizeof(wrText), " \x07[WR +%s]", diffStr);
         }
     }
     else
@@ -407,13 +415,6 @@ void OnPlayerFinished(int client, float time)
         strcopy(g_ServerRecordSteamId, sizeof(g_ServerRecordSteamId), g_PlayerSteamId[client]);
         SaveRecords();
     }
-}
-
-char[] FormatTimeDiff(float diff)
-{
-    static char buffer[32];
-    FormatDurationCenti(diff, buffer, sizeof(buffer));
-    return buffer;
 }
 
 bool PointInBox(const float p[3], const float bmin[3], const float bmax[3])
