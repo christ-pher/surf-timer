@@ -88,7 +88,7 @@ public void OnPluginStart()
     RegConsoleCmd("sm_r",              Cmd_RestartToStartCenter, "Teleport to center of start zone (resets run).");
     RegConsoleCmd("sm_top",            Cmd_ShowTopTimes,         "Show top 10 times for this map.");
     RegConsoleCmd("sm_pb",             Cmd_ShowPersonalBest,     "Show your personal best time.");
-    RegConsoleCmd("sm_wr",             Cmd_ShowWorldRecord,      "Show the server record.");
+    RegConsoleCmd("sm_sr",             Cmd_ShowServerRecord,     "Show the server record.");
     RegAdminCmd ("sm_zones_refresh",   Cmd_ZonesRefresh,         ADMFLAG_GENERIC, "Fetch zones/settings from API now.");
     RegAdminCmd ("sm_zones_debug",     Cmd_ZonesDebug,           ADMFLAG_GENERIC, "Print current boxes/centers to console.");
     RegAdminCmd ("sm_records_reset",   Cmd_ResetRecords,         ADMFLAG_ROOT, "Reset all records for current map.");
@@ -364,36 +364,36 @@ void OnPlayerFinished(int client, float time)
     }
     
     // Compare to server record
-    bool newWR = false;
-    char wrDiffStr[32] = "";
-    bool wrImproved = false;
+    bool newSR = false;
+    char srDiffStr[32] = "";
+    bool srImproved = false;
     
     if (g_ServerRecord > 0.0)
     {
-        float wrDiff = time - g_ServerRecord;
+        float srDiff = time - g_ServerRecord;
         
         if (time < g_ServerRecord)
         {
-            newWR = true;
-            wrImproved = true;
-            FormatDurationCenti(g_ServerRecord - time, wrDiffStr, sizeof(wrDiffStr));
-            Format(wrDiffStr, sizeof(wrDiffStr), "WR -%s", wrDiffStr);
+            newSR = true;
+            srImproved = true;
+            FormatDurationCenti(g_ServerRecord - time, srDiffStr, sizeof(srDiffStr));
+            Format(srDiffStr, sizeof(srDiffStr), "SR -%s", srDiffStr);
         }
         else
         {
-            FormatDurationCenti(wrDiff, wrDiffStr, sizeof(wrDiffStr));
-            Format(wrDiffStr, sizeof(wrDiffStr), "WR +%s", wrDiffStr);
+            FormatDurationCenti(srDiff, srDiffStr, sizeof(srDiffStr));
+            Format(srDiffStr, sizeof(srDiffStr), "SR +%s", srDiffStr);
         }
     }
     else
     {
-        newWR = true;
-        wrImproved = true;
-        strcopy(wrDiffStr, sizeof(wrDiffStr), "NEW WR");
+        newSR = true;
+        srImproved = true;
+        strcopy(srDiffStr, sizeof(srDiffStr), "NEW SR");
     }
     
     // Announce completion with both comparisons
-    if (newWR)
+    if (newSR)
     {
         PrintToChatAll("\x04[SURF] \x03★ NEW SERVER RECORD! ★");
     }
@@ -402,7 +402,7 @@ void OnPlayerFinished(int client, float time)
     // Using if statements to add color codes to each part
     char finalMessage[256];
     char pbColoredText[64];
-    char wrColoredText[64];
+    char srColoredText[64];
     
     if (pbImproved)
     {
@@ -413,18 +413,18 @@ void OnPlayerFinished(int client, float time)
         Format(pbColoredText, sizeof(pbColoredText), "\x01%s", pbDiffStr);  // White for slower PB
     }
     
-    if (wrImproved)
+    if (srImproved)
     {
-        Format(wrColoredText, sizeof(wrColoredText), "\x04%s", wrDiffStr);  // Green for WR improvement
+        Format(srColoredText, sizeof(srColoredText), "\x04%s", srDiffStr);  // Green for SR improvement
     }
     else
     {
-        Format(wrColoredText, sizeof(wrColoredText), "\x01%s", wrDiffStr);  // White for slower than WR
+        Format(srColoredText, sizeof(srColoredText), "\x01%s", srDiffStr);  // White for slower than SR
     }
     
     // Print the final message - time is already \x03 (green/team color)
     PrintToChatAll("\x04[SURF]\x01 %s completed in \x03%s\x01 | %s\x01 | %s", 
-        name, timeStr, pbColoredText, wrColoredText);
+        name, timeStr, pbColoredText, srColoredText);
     
     // Update records
     if (newPB || !g_HasPersonalBest[client])
@@ -434,7 +434,7 @@ void OnPlayerFinished(int client, float time)
         SavePlayerRecord(client, time);
     }
     
-    if (newWR || g_ServerRecord == 0.0)
+    if (newSR || g_ServerRecord == 0.0)
     {
         g_ServerRecord = time;
         strcopy(g_ServerRecordHolder, sizeof(g_ServerRecordHolder), name);
@@ -495,7 +495,7 @@ void LoadRecords()
     
     delete root;
     
-    PrintToServer("[SURF] Loaded records for %s. WR: %.2f by %s", 
+    PrintToServer("[SURF] Loaded records for %s. SR: %.2f by %s", 
         g_CurrentMap, g_ServerRecord, g_ServerRecordHolder);
 }
 
@@ -730,7 +730,7 @@ public Action Cmd_ShowTopTimes(int client, int args)
     {
         char timeStr[32];
         FormatDurationCenti(g_ServerRecord, timeStr, sizeof(timeStr));
-        PrintToChat(client, "\x04[WR]\x01 %s - \x03%s", g_ServerRecordHolder, timeStr);
+        PrintToChat(client, "\x04[SR]\x01 %s - \x03%s", g_ServerRecordHolder, timeStr);
     }
     else
     {
@@ -756,7 +756,7 @@ public Action Cmd_ShowPersonalBest(int client, int args)
     return Plugin_Handled;
 }
 
-public Action Cmd_ShowWorldRecord(int client, int args)
+public Action Cmd_ShowServerRecord(int client, int args)
 {
     if (g_ServerRecord > 0.0)
     {
