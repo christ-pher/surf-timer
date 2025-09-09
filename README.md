@@ -30,7 +30,7 @@ git clone https://github.com/christ-pher/surf-timer.git
 # Compile the plugin
 ./compile.sh Chris-Surf-Timer.sp
 
-# Copy the compiled plugin to your plugins dir
+# Copy the compiled plugin to cstrike/addons/sourcemod/plugins 
 cp compiled/Chris-Surf-Timer.smx ../plugins
 
 # Restart your CS:S server
