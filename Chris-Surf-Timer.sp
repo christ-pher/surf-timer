@@ -55,10 +55,10 @@ bool  g_HasPersonalBest[MAXPLAYERS + 1];
 // ───────────────────────────────────────────
 public Plugin myinfo =
 {
-    name        = "Chris Surf Timer Enhanced",
+    name        = "Chris Surf Timer BETA",
     author      = "christ-pher",
     description = "Surf timer with records for CS:Source",
-    version     = "2.0.0"
+    version     = "2.0.1"
 };
 
 // ───────────────────────────────────────────
@@ -668,7 +668,7 @@ void BuildTimeText(int client, float now, char[] out, int len)
 
     if (g_RunState[client] == 0)
     {
-        strcopy(out, len, "0.00");
+        strcopy(out, len, "00:00.00");
     }
     else if (g_RunState[client] == 1)
     {
@@ -689,10 +689,8 @@ void FormatDurationCenti(float seconds, char[] out, int len)
     int secs    = (centi % 6000) / 100;
     int cs      = centi % 100;
 
-    if (minutes > 0)
-        Format(out, len, "%d:%02d.%02d", minutes, secs, cs);
-    else
-        Format(out, len, "%d.%02d", secs, cs);
+    // Always format as MM:SS.MS
+    Format(out, len, "%02d:%02d.%02d", minutes, secs, cs);
 }
 
 // ───────────────────────────────────────────
