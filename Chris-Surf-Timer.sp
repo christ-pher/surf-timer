@@ -141,6 +141,9 @@ public void OnMapStart()
         {
             SetConVarInt(mp_timelimit, 0);
         }
+        
+        // Force a round restart to apply the new round time
+        CreateTimer(1.0, Timer_RestartRound);
     }
     
     FetchZonesFromApi_RIPExt(0);
@@ -1236,5 +1239,11 @@ public Action Timer_TeleportToStart(Handle timer, int userid)
         g_WasInStart[client] = true;
     }
     
+    return Plugin_Handled;
+}
+
+public Action Timer_RestartRound(Handle timer)
+{
+    ServerCommand("mp_restartgame 1");
     return Plugin_Handled;
 }
