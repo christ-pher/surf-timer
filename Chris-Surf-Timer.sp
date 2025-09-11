@@ -16,7 +16,6 @@ ConVar gCvarRestartZBoost;       // sm_restart_zboost
 ConVar gCvarEnable;              // sm_speedtext_enable
 ConVar gCvarApplySettings;       // sm_speedtext_applysettings
 ConVar gCvarRecordAnnounce;      // sm_surf_announce_interval
-ConVar gCvarInfiniteRounds;      // sm_surf_infinite_rounds
 ConVar gCvarAutoRespawn;         // sm_surf_auto_respawn
 
 Handle g_DrawTimer = INVALID_HANDLE;
@@ -87,8 +86,6 @@ public void OnPluginStart()
         "Apply allowed CVARs from API.settings and optional exec_cfg (1/0)");
     gCvarRecordAnnounce = CreateConVar("sm_surf_announce_interval", "180.0",
         "Interval (seconds) between server record announcements. 0 = disabled", 0, true, 0.0);
-    gCvarInfiniteRounds = CreateConVar("sm_surf_infinite_rounds", "1",
-        "Enable infinite rounds (bypass 9-minute round limit) (1/0)");
     gCvarAutoRespawn = CreateConVar("sm_surf_auto_respawn", "1",
         "Enable automatic respawn on death (1/0)");
 
@@ -104,7 +101,6 @@ public void OnPluginStart()
     HookConVarChange(gCvarDrawInterval, OnIntervalChanged);
     HookConVarChange(gCvarRecordAnnounce, OnAnnounceIntervalChanged);
     
-    HookEvent("round_start", Event_RoundStart);
     HookEvent("player_death", Event_PlayerDeath);
     
     StartDrawTimer();
@@ -126,26 +122,6 @@ public void OnMapStart()
     LoadRecords();
     StartDrawTimer();
     StartAnnounceTimer();
-    
-    // Set up infinite rounds on map start
-    if (gCvarInfiniteRounds.BoolValue)
-    {
-        ConVar mp_roundtime = FindConVar("mp_roundtime");
-        if (mp_roundtime != null)
-        {
-            SetConVarFloat(mp_roundtime, 60.0);
-        }
-        
-        ConVar mp_timelimit = FindConVar("mp_timelimit");
-        if (mp_timelimit != null)
-        {
-            SetConVarInt(mp_timelimit, 0);
-        }
-        
-        // Force a round restart to apply the new round time
-        CreateTimer(1.0, Timer_RestartRound);
-    }
-    
     FetchZonesFromApi_RIPExt(0);
 }
 
@@ -1154,27 +1130,8 @@ void BuildUrlFromTemplate(const char[] templ, const char[] map, char[] outUrl, i
 }
 
 // ───────────────────────────────────────────
-// Event Handlers for Round Control and Respawn
+// Event Handlers for Auto Respawn
 // ───────────────────────────────────────────
-public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
-{
-    if (gCvarInfiniteRounds.BoolValue)
-    {
-        // Set round time to 60 minutes (3600 seconds)
-        ConVar mp_roundtime = FindConVar("mp_roundtime");
-        if (mp_roundtime != null)
-        {
-            SetConVarFloat(mp_roundtime, 60.0);
-        }
-        
-        // Also set timelimit to 0 to disable map time limit
-        ConVar mp_timelimit = FindConVar("mp_timelimit");
-        if (mp_timelimit != null)
-        {
-            SetConVarInt(mp_timelimit, 0);
-        }
-    }
-}
 
 public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
@@ -1242,9 +1199,4 @@ public Action Timer_TeleportToStart(Handle timer, int userid)
     return Plugin_Handled;
 }
 
-public Action Timer_RestartRound(Handle timer)
-{
-    ServerCommand("mp_restartgame 1");
-    return Plugin_Handled;
-}
 
