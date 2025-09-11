@@ -4,7 +4,6 @@
 #include <sourcemod>
 #include <sdktools>
 #include <ripext>
-#include <cstrike>
 
 // ───────────────────────────────────────────
 // ConVars
@@ -16,8 +15,6 @@ ConVar gCvarRestartZBoost;       // sm_restart_zboost
 ConVar gCvarEnable;              // sm_speedtext_enable
 ConVar gCvarApplySettings;       // sm_speedtext_applysettings
 ConVar gCvarRecordAnnounce;      // sm_surf_announce_interval
-ConVar gCvarInfiniteRounds;      // sm_surf_infinite_rounds
-ConVar gCvarAutoRespawn;         // sm_surf_auto_respawn
 
 Handle g_DrawTimer = INVALID_HANDLE;
 Handle g_AnnounceTimer = INVALID_HANDLE;
@@ -87,10 +84,6 @@ public void OnPluginStart()
         "Apply allowed CVARs from API.settings and optional exec_cfg (1/0)");
     gCvarRecordAnnounce = CreateConVar("sm_surf_announce_interval", "180.0",
         "Interval (seconds) between server record announcements. 0 = disabled", 0, true, 0.0);
-    gCvarInfiniteRounds = CreateConVar("sm_surf_infinite_rounds", "1",
-        "Enable infinite rounds (bypass 9-minute round limit) (1/0)");
-    gCvarAutoRespawn = CreateConVar("sm_surf_auto_respawn", "1",
-        "Enable automatic respawn on death (1/0)");
 
     RegConsoleCmd("sm_r",              Cmd_RestartToStartCenter, "Teleport to center of start zone (resets run).");
     RegConsoleCmd("sm_top",            Cmd_ShowTopTimes,         "Show top 10 times for this map.");
@@ -103,9 +96,6 @@ public void OnPluginStart()
 
     HookConVarChange(gCvarDrawInterval, OnIntervalChanged);
     HookConVarChange(gCvarRecordAnnounce, OnAnnounceIntervalChanged);
-    
-    HookEvent("round_start", Event_RoundStart);
-    HookEvent("player_death", Event_PlayerDeath);
     
     StartDrawTimer();
 }
@@ -126,23 +116,6 @@ public void OnMapStart()
     LoadRecords();
     StartDrawTimer();
     StartAnnounceTimer();
-    
-    // Set up infinite rounds on map start
-    if (gCvarInfiniteRounds.BoolValue)
-    {
-        ConVar mp_roundtime = FindConVar("mp_roundtime");
-        if (mp_roundtime != null)
-        {
-            SetConVarFloat(mp_roundtime, 60.0);
-        }
-        
-        ConVar mp_timelimit = FindConVar("mp_timelimit");
-        if (mp_timelimit != null)
-        {
-            SetConVarInt(mp_timelimit, 0);
-        }
-    }
-    
     FetchZonesFromApi_RIPExt(0);
 }
 
@@ -1148,93 +1121,4 @@ void BuildUrlFromTemplate(const char[] templ, const char[] map, char[] outUrl, i
         strcopy(suf, sizeof(suf), outUrl[pos + 5]);
         Format(outUrl, outlen, "%s%s%s", pre, map, suf);
     }
-}
-
-// ───────────────────────────────────────────
-// Event Handlers for Round Control and Respawn
-// ───────────────────────────────────────────
-public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
-{
-    if (gCvarInfiniteRounds.BoolValue)
-    {
-        // Set round time to 60 minutes (3600 seconds)
-        ConVar mp_roundtime = FindConVar("mp_roundtime");
-        if (mp_roundtime != null)
-        {
-            SetConVarFloat(mp_roundtime, 60.0);
-        }
-        
-        // Also set timelimit to 0 to disable map time limit
-        ConVar mp_timelimit = FindConVar("mp_timelimit");
-        if (mp_timelimit != null)
-        {
-            SetConVarInt(mp_timelimit, 0);
-        }
-    }
-}
-
-public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
-{
-    if (!gCvarAutoRespawn.BoolValue)
-        return;
-    
-    int client = GetClientOfUserId(event.GetInt("userid"));
-    if (client <= 0 || !IsClientInGame(client) || IsFakeClient(client))
-        return;
-    
-    CreateTimer(1.0, Timer_RespawnPlayer, GetClientUserId(client));
-}
-
-public Action Timer_RespawnPlayer(Handle timer, int userid)
-{
-    int client = GetClientOfUserId(userid);
-    if (client <= 0 || !IsClientInGame(client))
-        return Plugin_Handled;
-    
-    if (!IsPlayerAlive(client))
-    {
-        CS_RespawnPlayer(client);
-        
-        if (g_HaveZones)
-        {
-            float ang[3];
-            GetClientEyeAngles(client, ang);
-            
-            float zeroVel[3] = {0.0, 0.0, 0.0};
-            float dst[3];
-            dst[0] = g_StartCenter[0];
-            dst[1] = g_StartCenter[1];
-            dst[2] = g_StartCenter[2] + gCvarRestartZBoost.FloatValue;
-            
-            CreateTimer(0.1, Timer_TeleportToStart, GetClientUserId(client));
-        }
-    }
-    
-    return Plugin_Handled;
-}
-
-public Action Timer_TeleportToStart(Handle timer, int userid)
-{
-    int client = GetClientOfUserId(userid);
-    if (client <= 0 || !IsClientInGame(client) || !IsPlayerAlive(client))
-        return Plugin_Handled;
-    
-    if (g_HaveZones)
-    {
-        float ang[3];
-        GetClientEyeAngles(client, ang);
-        
-        float zeroVel[3] = {0.0, 0.0, 0.0};
-        float dst[3];
-        dst[0] = g_StartCenter[0];
-        dst[1] = g_StartCenter[1];
-        dst[2] = g_StartCenter[2] + gCvarRestartZBoost.FloatValue;
-        
-        TeleportEntity(client, dst, ang, zeroVel);
-        
-        ResetRun(client);
-        g_WasInStart[client] = true;
-    }
-    
-    return Plugin_Handled;
 }
