@@ -55,10 +55,10 @@ bool  g_HasPersonalBest[MAXPLAYERS + 1];
 // ───────────────────────────────────────────
 public Plugin myinfo =
 {
-    name        = "Chris Surf Timer v2",
+    name        = "Chris Surf Timer BETA",
     author      = "christ-pher",
-    description = "Surf timer with improved HUD for CS:Source",
-    version     = "2.1.0"
+    description = "Surf timer with records for CS:Source",
+    version     = "2.0.1"
 };
 
 // ───────────────────────────────────────────
@@ -649,10 +649,10 @@ public Action Timer_DrawUI(Handle timer)
         char timeText[32];
         BuildTimeText(client, now, timeText, sizeof(timeText));
 
-        char hudText[128];
-        Format(hudText, sizeof(hudText), "%s\n%d u/s", timeText, speedInt);
+        char line[64];
+        Format(line, sizeof(line), "%d | %s", speedInt, timeText);
 
-        PrintHintText(client, "%s", hudText);
+        PrintCenterText(client, "%s", line);
     }
 
     return Plugin_Continue;
@@ -798,10 +798,10 @@ public Action Cmd_PingUI(int client, int args)
     char timeText[32];
     BuildTimeText(client, GetGameTime(), timeText, sizeof(timeText));
 
-    char hudText[128];
-    Format(hudText, sizeof(hudText), "PING\n%s\n%d u/s", timeText, speedInt);
+    char line[64];
+    Format(line, sizeof(line), "PING • %d | %s", speedInt, timeText);
 
-    PrintHintText(client, "%s", hudText);
+    PrintCenterText(client, "%s", line);
     ReplyToCommand(client, "[SURF] Center text sent.");
     return Plugin_Handled;
 }
